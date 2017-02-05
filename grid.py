@@ -32,5 +32,26 @@ def manhattan_distance(c1, c2):
     return abs(c1[0] - c2[0]) + abs(c1[1] - c2[1])
 
 
+# Returns the cost to travel from s1 to s2. Returns inf if either is blocked
+def cost(s1, s2):
+    if s1.is_blocked() or s2.is_blocked():
+        return float('inf')
+
+    return (s1.cost() + s2.cost())/2
+
+
+# Returns the neighboring cells of Space s in grid g
+def neighbors(g, s):
+    (r, c) = s.coords
+    max_r = g.shape[0]
+    max_c = g.shape[1]
+    n = []
+    for x in range(max(0, r-1), min(max_r, r+1)):
+        for y in range(max(0, c-1), min(max_c, c+1)):
+            if not g[x, y].is_blocked():
+                n.append(g[x, y])
+    return n
+
+
 def euclidian_distance(c1, c2):
     return sqrt(c1**2, c2**2)
