@@ -5,6 +5,11 @@ class Type(object):
     highway_regular = 'A'
     highway_rough = 'B'
     highways = [highway_regular, highway_rough]
+    costs = {blocked: float('inf'),
+             regular: 1.,
+             rough: 2.,
+             highway_regular: 1.,
+             highway_rough: 2.}
 
 
 class Space(object):
@@ -12,9 +17,8 @@ class Space(object):
         self.coords = coords    # Should never change
         self.type = space_type  # Mutable
 
-    def movement(self):
-        # TODO: fill in rest of movement
-        return 1.0
+    def cost(self):
+        return Type.costs[self.type]
 
     def is_regular(self):
         return self.type is Type.regular

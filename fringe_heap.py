@@ -9,7 +9,9 @@ class Fringe(list):
 
     # Returns the next element in the fringe
     def pop(self):
-        return heapq.heappop(self)
+        (x, s) = heapq.heappop(self)
+        self.costs.pop(s)
+        return (x, s)
 
     def insert(self, s, x):
         self[s] = x
@@ -33,6 +35,6 @@ class Fringe(list):
     # Remove s from the fringe
     def remove(self, s):
         x = self[s]
-        self.costs.pop(s)
         super(Fringe, self).remove(x)
+        self.costs.pop(s)
         self.sort()

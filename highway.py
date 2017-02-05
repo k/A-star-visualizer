@@ -59,7 +59,7 @@ def gen_highway(g):
 
         # Stop on border an evaluate length
         if curr in edges and curr is not start:
-            if len(highway) < 100:
+            if len(highway) < .8*min(g.shape[0], g.shape[1]):
                 raise Exception('Highway not long enough')
             break
 
