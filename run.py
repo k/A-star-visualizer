@@ -1,37 +1,57 @@
 import maps
-from grid import grid, diagonal_distance
-from search import uniform_cost_search, a_star, a_star_weighted
-from heuristic import make_admissible
+from grid import blank_grid
+from heuristic import make_admissibile, diagonal_distance, manhattan_distance, euclidian_distance
+from search import uniform_cost_search, a_star, path
+from gen_image import output_image
 
-g = grid()
+grid = blank_grid()
 
 print('Testing rough')
-g = maps.gen_rough(g)
+grid = maps.gen_rough(grid)
 
 print('Testing gen_highways')
 h = None
 while h is None:
     try:
-        h = maps.gen_highways(g)
+        h = maps.gen_highways(grid)
     except Exception as e:
         print(e)
         print('Retrying')
-g = h
+grid = h
 
 print('Testing blocked')
-g = maps.gen_blocked(g)
+grid = maps.gen_blocked(grid)
 
 print('Testing start_goal')
-(start, goal) = maps.gen_start_goal_pair(g)
+(start, goal) = maps.gen_start_goal_pair(grid)
 
 print('Writing to output file')
-maps.output_file(g, start, goal)
+maps.output_file(grid, start, goal)
+
+g = None
+h = None
+path = None
 
 print('Running Uniform Cost Search')
-print(uniform_cost_search(g, start, goal))
+ucs = uniform_cost_search(grid, start, goal)
+for (g, h, parent, curr) in ucs:
+    pass
+print(g[goal])
+output_image(grid, "ucs.png", start, goal, path[curr])
+
 
 print('Running A* Search')
-print(a_star(g, start, goal, make_admissible(diagonal_distance)))
+astar = a_star(grid, start, goal, make_admissible(manhattan_distance))
+for (g, h, parent, curr) in astar:
+    pass
+print(g[goal])
+output_image(grid, "a_star.png", start, goal, path[curr])
 
 print('Running A* Weighted Search')
-print(a_star_weighted(g, start, goal))
+astar_w = a_star(grid, start, goal, diagonal_distance, w=2)
+for (g, h, parent, curr) in astar_w:
+    pass
+print(g[goal])
+
+print('Outputting map to map.txt')
+output_image(grid, "a_star_w.png", start, goal, path[curr])

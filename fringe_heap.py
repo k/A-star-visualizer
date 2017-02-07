@@ -37,4 +37,4 @@ class Fringe(list):
         x = self[s]
         super(Fringe, self).remove(x)
         self.costs.pop(s)
-        self.sort()
+        heapq.heapify(self)

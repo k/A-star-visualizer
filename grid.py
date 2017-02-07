@@ -4,20 +4,20 @@ from space import Space
 
 
 # returns a blank grid of all zeros
-def grid(r=120, c=160):
-    a = [Space((x, y)) for x in range(0, r) for y in range(0, c)]
-    return np.array(a).reshape(r, c)
+def blank_grid(x=160, y=120):
+    a = [Space((i, j)) for i in range(0, x) for j in range(0, y)]
+    return np.array(a).reshape(x, y)
 
 
 # returns a 1D array of all the border cells from a 2D ndarray
 def borders(g, w=1):
     s = g.shape
-    max_r = s[0]
-    max_c = s[1]
+    max_x = s[0]
+    max_y = s[1]
     left = g[0:w, :].flatten()
     top = g[w:, 0:w].flatten()
-    bottom = g[max_r - w:max_r, w:].flatten()
-    right = g[w:(max_r - w), max_c - w:max_c].flatten()
+    bottom = g[max_x - w:max_x, w:].flatten()
+    right = g[w:(max_x - w), max_y - w:max_y].flatten()
     return np.concatenate([top, left, right, bottom]).flatten()
 
 
@@ -29,32 +29,31 @@ def corners(g):
 
 # Returns the cost to travel from s1 to s2. Returns inf if either is blocked
 def cost(g, s1, s2):
-    if s1.is_blocked() or s2.is_blocked():
-        raise Exception('Calculating cost to blocked cell')
     if s2 in neighbors(g, s1):
-        c = (s1.cost() + s2.cost())/2
-        if s1.is_highway() and s2.is_highway():
-            return c/4
+        y = (s1.cost() + s2.cost())/2.
+        if is_diagonal(s1, s2):
+            return (s1.cost() + s2.cost())/(2.**.5)
+        elif s1.is_highway() and s2.is_highway():
+            return y/4.
         else:
-            return c
+            return y
     else:
         return float('inf')
 
 
 # Returns the neighboring cells of Space s in grid g
 def neighbors(g, s):
-    (r, c) = s.coords
-    max_r = g.shape[0]
-    max_c = g.shape[1]
+    (x, y) = s.coords
+    max_x = g.shape[0]
+    max_y = g.shape[1]
     n = []
-    for x in range(max(0, r-1), min(max_r, r+2)):
-        for y in range(max(0, c-1), min(max_c, c+2)):
-            if not g[x, y].is_blocked():
-                n.append(g[x, y])
+    for i in range(max(0, x-1), min(max_x, x+2)):
+        for j in range(max(0, y-1), min(max_y, y+2)):
+            if not g[i, j].is_blocked():
+                n.append(g[i, j])
     return n
 
 
-# TODO Python Documentation
 def unwrap_coords(func):
     def func_wrapper(s1, s2):
         (s1x, s1y) = s1.coords
@@ -64,17 +63,5 @@ def unwrap_coords(func):
 
 
 @unwrap_coords
-def euclidian_distance(s1x, s1y, s2x, s2y):
-    return ((s1x - s2x)**2 + (s1y - s2y)**2)**(1/2)
-
-
-@unwrap_coords
-def manhattan_distance(s1x, s1y, s2x, s2y):
-    return abs(s1x - s2x) + abs(s1y - s2y)
-
-
-@unwrap_coords
-def diagonal_distance(s1x, s1y, s2x, s2y):
-    d_x = abs(s1x - s2x)
-    d_y = abs(s1y - s2y)
-    return (2**(.5) - 1)*min(d_x, d_y) + max(d_x, d_y)
+def is_diagonal(s1x, s1y, s2x, s2y):
+    return s1x != s2x and s1y != s2y

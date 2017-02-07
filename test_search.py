@@ -8,18 +8,15 @@ from search import *
 class TestSearch(unittest.TestCase):
     def setUp(self):
         self.g = grid.grid(20, 20)
+        (start, end) = gen_start_goal_pair(self.g)
+        self.start = start
+        self.end = end
 
     def test_uniform_cost_search(self):
-        (start, end) = gen_start_goal_pair(self.g)
-        assert uniform_cost_search(self.g, start, end) is not None
+        assert uniform_cost_search(self.g, self.start, self.end) is not None
 
     def test_a_star(self):
-        (start, end) = gen_start_goal_pair(self.g)
-        assert a_star(self.g, start, end) is not None
-
-    def test_a_star_weighted(self):
-        (start, end) = gen_start_goal_pair(self.g)
-        assert a_star_weighted(self.g, start, end) is not None
+        assert a_star(self.g, self.start, self.end) is not None
 
 
 def test_main():
