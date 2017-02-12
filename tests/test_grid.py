@@ -1,5 +1,6 @@
 import unittest
 from test import test_support
+import imports
 from space import Space
 from grid import blank_grid, is_diagonal, neighbors, cost
 from maps import gen_start_goal_pair
@@ -30,7 +31,7 @@ class TestGrid(unittest.TestCase):
             assert s in computed_n
 
     def test_cost(self):
-        def approx_equal(f1, f2): 
+        def approx_equal(f1, f2):
             return abs(f1 - f2) < .01
         assert approx_equal(cost(self.grid, self.grid[1, 1], self.grid[0, 0]), 2.**.5)
         assert approx_equal(cost(self.grid, self.grid[1, 1], self.grid[0, 1]), 1.)
@@ -41,7 +42,6 @@ class TestGrid(unittest.TestCase):
         assert approx_equal(cost(self.grid, self.grid[1, 1], self.grid[2, 2]), 2.**.5)
         assert approx_equal(cost(self.grid, self.grid[1, 1], self.grid[2, 1]), 1.)
         assert approx_equal(cost(self.grid, self.grid[1, 1], self.grid[2, 0]), 2.**.5)
-
 
 
 def test_main():

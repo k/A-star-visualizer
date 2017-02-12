@@ -1,4 +1,5 @@
 import heapq
+import types
 
 
 # Fringe
@@ -7,8 +8,11 @@ class Fringe(list):
         super(Fringe, self).__init__()
         self.costs = dict()
 
-    # Returns the next element in the fringe
+    def top(self):
+        return iter(self).next()
+
     def pop(self):
+        """Get the next element in the fringe"""
         (x, s) = heapq.heappop(self)
         self.costs.pop(s)
         return (x, s)

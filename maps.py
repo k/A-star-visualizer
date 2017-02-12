@@ -45,8 +45,8 @@ def gen_start_goal_pair(g):
     return (start, goal)
 
 
-def output_file(g, start=None, goal=None):
-    with open('map.txt', 'w') as f:
+def output_file(g, start=None, goal=None, fname='map.txt'):
+    with open(fname, 'w') as f:
         if start:
             f.write(str(start.coords[0]) + ',' + str(start.coords[1]) + '\n')
         if goal:

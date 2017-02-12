@@ -3,7 +3,7 @@ import numpy as np
 from space import Space
 
 
-# returns a blank grid of all zeros
+# returns a grid with all blank spaces
 def blank_grid(x=160, y=120):
     a = [Space((i, j)) for i in range(0, x) for j in range(0, y)]
     return np.array(a).reshape(x, y)
