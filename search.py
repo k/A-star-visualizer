@@ -22,6 +22,17 @@ def path(parent, curr):
     return path
 
 
+def path_cost(grid, parent, curr):
+    p = path(parent, curr)
+    c = 0
+    prev = None
+    for s in p:
+        if prev:
+            c = c + cost(grid, prev, s)
+        prev = s
+    return c
+
+
 # Implementation of Best First Search that uses a priority queue (implemented as a binary heap)
 def best_first_search(grid, start, goal, cost, h=lambda n: 0):
     fringe = Fringe()
@@ -65,14 +76,7 @@ def a_star(grid, start, goal, heuristic=diagonal_distance, w=1, w2=1, integrated
     if isinstance(heuristic, list):  # Do iterative A*
         if len(heuristic) > 1:
             if integrated:
-                # Since a_star_integrated does not call back in to a_star,
-                # set up the heuristic functions to take only one argument
-                heuristics = []
-                for h in heuristic:
-                    def new_h(n):
-                        return w*h(n, goal)
-                    heuristics.append(new_h)
-                return a_star_integrated(grid, start, goal, heuristics, w, w2)
+                return a_star_integrated(grid, start, goal, heuristic, w, w2)
             else:
                 return a_star_sequential(grid, start, goal, heuristic, w, w2)
         else:
@@ -124,6 +128,12 @@ def a_star_sequential(grid, start, goal,
 def a_star_integrated(grid, start, goal,
                       heuristics=[diagonal_distance_a, euclidian_distance],
                       w1=1, w2=1):
+    h_s = []
+    for h1 in heuristics:  # Ran into a weird namespacing issue here when h1 was h
+        def new_h(n):
+            return w1*h1(n, goal)
+        h_s.append(new_h)
+    heuristics = h_s
     g = dict()
     bp = dict()
     o = dict()

@@ -4,3 +4,4 @@ pyc
 img
 maps
 __pycache__
+*csv/
