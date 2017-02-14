@@ -315,7 +315,8 @@ def process_args():
                                 u: Uniform Cost Search\n \
                                 a: A star search\n \
                                 aw: A star weighted')
-    parser.add_argument('--heuristics', '-u', metavar='h(n)', nargs='+', type=str, choices=['m', 'ma', 'd', 'da', 'e'], default='d',
+    parser.add_argument('--heuristics', '-u', metavar='h(n)', nargs='+', type=str, 
+                        choices=['m', 'ma', 'd', 'da', 'e'], default='d',
                         help='The heuristic to use\n\
                                 m: Manhattan Distance\n\
                                 ma: Manhattan Distance admissible \n\
@@ -326,7 +327,11 @@ def process_args():
     parser.add_argument('--favor-highways', '-f', action='store_true',
                         help="Whether the heuristic should favor highways ")
     parser.add_argument('--favor-highways-smart', '-F', action='store_true',
-                        help="Whether the heuristic should favor highways only in the direction of the goal")
+                        help="Whether the heuristic should favor highways only \
+                                in the direction of the goal")
+    parser.add_argument('--not-integrated', '-i', action='store_true',
+                        help="If given multiple heuristics should the sequential \
+                                approach be used instead of the integrated one.")
     args = parser.parse_args()
 
     algorithms = {'u': uniform_cost_search, 'a': a_star}
@@ -342,13 +347,14 @@ def process_args():
     w = args.weight
     fh = args.favor_highways
     fhs = args.favor_highways_smart
+    integrated = not args.not_integrated
 
     if algo is a_star:
         if fhs:
             h = favor_highways_smart(h)
         elif fh:
             h = favor_highways(h)
-        algo = partial(algo, heuristic=h, w=w)
+        algo = partial(algo, heuristic=h, w=w, integrated=integrated)
 
     speed = args.speed
     return (args.input_file[0], algo, speed)

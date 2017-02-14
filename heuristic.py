@@ -8,33 +8,6 @@ def make_admissible(h):
     return h_admissable
 
 
-@unwrap_coords
-def euclidian_distance(s1x, s1y, s2x, s2y):
-    return ((s1x - s2x)**2. + (s1y - s2y)**2.)**(.5)
-
-
-@unwrap_coords
-def manhattan_distance(s1x, s1y, s2x, s2y):
-    return abs(s1x - s2x) + abs(s1y - s2y)
-
-
-@unwrap_coords
-def diagonal_distance(s1x, s1y, s2x, s2y):
-    d_x = abs(s1x - s2x)
-    d_y = abs(s1y - s2y)
-    return (2**(.5) - 1)*min(d_x, d_y) + max(d_x, d_y)
-
-
-@make_admissible
-def diagonal_distance_a(s, goal):
-    return diagonal_distance(s, goal)
-
-
-@make_admissible
-def manhattan_distance_a(s, goal):
-    return manhattan_distance(s, goal)
-
-
 def favor_highways(h):
     def h_favor_highways(s, goal):
         h_v = h(s, goal)
@@ -42,6 +15,7 @@ def favor_highways(h):
     return h_favor_highways
 
 
+# TODO: Still need the grid for neighbors, maybe refactor heuristics to take a grid?
 def favor_highways_smart(h):
     def h_favor_highways_smart(s, goal):
         # Only useful for searching for highways beyond manhattan distance
@@ -61,3 +35,85 @@ def favor_highways_smart(h):
 
         return cost
     return h_favor_highways_smart
+
+
+@unwrap_coords
+def chebychev_distance(s1x, s1y, s2x, s2y):
+    return max(abs(s1x-s2x), abs(s1y-s2y))
+
+
+@make_admissible
+def chebychev_distance_a(s, goal):
+    return chebychev_distance(s, goal)
+
+
+@favor_highways
+def chebychev_distance_f(s, goal):
+    return chebychev_distance(s, goal)
+
+
+@favor_highways_smart
+def chebychev_distance_s(s, goal):
+    return chebychev_distance(s, goal)
+
+
+@unwrap_coords
+def euclidian_distance(s1x, s1y, s2x, s2y):
+    return ((s1x - s2x)**2. + (s1y - s2y)**2.)**(.5)
+
+
+@make_admissible
+def euclidian_distance_a(s1x, s1y, s2x, s2y):
+    return ((s1x - s2x)**2. + (s1y - s2y)**2.)**(.5)
+
+
+@favor_highways
+def euclidian_distance_f(s1x, s1y, s2x, s2y):
+    return ((s1x - s2x)**2. + (s1y - s2y)**2.)**(.5)
+
+
+@favor_highways_smart
+def euclidian_distance_s(s1x, s1y, s2x, s2y):
+    return ((s1x - s2x)**2. + (s1y - s2y)**2.)**(.5)
+
+
+@unwrap_coords
+def manhattan_distance(s1x, s1y, s2x, s2y):
+    return abs(s1x - s2x) + abs(s1y - s2y)
+
+
+@make_admissible
+def manhattan_distance_a(s, goal):
+    return manhattan_distance(s, goal)
+
+
+@favor_highways
+def manhattan_distance_f(s, goal):
+    return manhattan_distance(s, goal)
+
+
+@favor_highways_smart
+def manhattan_distance_s(s, goal):
+    return manhattan_distance(s, goal)
+
+
+@unwrap_coords
+def diagonal_distance(s1x, s1y, s2x, s2y):
+    d_x = abs(s1x - s2x)
+    d_y = abs(s1y - s2y)
+    return (2**(.5) - 1)*min(d_x, d_y) + max(d_x, d_y)
+
+
+@make_admissible
+def diagonal_distance_a(s, goal):
+    return diagonal_distance(s, goal)
+
+
+@favor_highways
+def diagonal_distance_f(s, goal):
+    return diagonal_distance(s, goal)
+
+
+@favor_highways_smart
+def diagonal_distance_s(s, goal):
+    return diagonal_distance(s, goal)

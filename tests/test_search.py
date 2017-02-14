@@ -8,7 +8,7 @@ from search import *
 
 class TestSearch(unittest.TestCase):
     def setUp(self):
-        self.g = blank_grid(20, 20)
+        self.g = blank_grid(120, 120)
         (start, end) = gen_start_goal_pair(self.g)
         self.start = start
         self.end = end
@@ -20,6 +20,7 @@ class TestSearch(unittest.TestCase):
         assert a_star(self.g, self.start, self.end) is not None
         assert a_star(self.g, self.start, self.end, w=2) is not None
         assert a_star_sequential(self.g, self.start, self.end) is not None
+        assert a_star_integrated(self.g, self.start, self.end) is not None
 
 
 def test_main():

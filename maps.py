@@ -65,9 +65,9 @@ def input_file(path):
     with open(path, 'r') as f:
         start = tuple([int(x) for x in f.readline().strip().split(',')])
         end = tuple([int(x) for x in f.readline().strip().split(',')])
-        a = np.genfromtxt(f, dtype='str', delimiter=1)
-        grid = blank_grid(a.shape[0], a.shape[1])
+        types = np.genfromtxt(f, dtype='str', delimiter=1)
+        grid = blank_grid(types.shape[0], types.shape[1])
         for (i, s) in np.ndenumerate(grid):
             (x, y) = i
-            s.type = a[x, y]
+            s.type = types[x, y]
         return (grid, start, end)

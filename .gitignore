@@ -3,3 +3,4 @@ archive
 pyc
 img
 maps
+__pycache__

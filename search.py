@@ -61,13 +61,23 @@ def uniform_cost_search(grid, start, goal):
     return best_first_search(grid, start, goal, cost)
 
 
-def a_star(grid, start, goal, heuristic=diagonal_distance, w=1, w2=1):
+def a_star(grid, start, goal, heuristic=diagonal_distance, w=1, w2=1, integrated=True):
     if isinstance(heuristic, list):  # Do iterative A*
         if len(heuristic) > 1:
-            return a_star_sequential(grid, start, goal, heuristic, w, w2)
+            if integrated:
+                # Since a_star_integrated does not call back in to a_star,
+                # set up the heuristic functions to take only one argument
+                heuristics = []
+                for h in heuristic:
+                    def new_h(n):
+                        return w*h(n, goal)
+                    heuristics.append(new_h)
+                return a_star_integrated(grid, start, goal, heuristics, w, w2)
+            else:
+                return a_star_sequential(grid, start, goal, heuristic, w, w2)
         else:
             return a_star(grid, start, goal, heuristic[0], w, w2)
-    else:  # Do regular A*
+    else:  # Only one heuristic, do regular A*
         def h(n):
             return w*heuristic(n, goal)
         return best_first_search(grid, start, goal, cost, h)
@@ -106,10 +116,91 @@ def a_star_sequential(grid, start, goal,
                         return
                 else:
                     yield next(anchor)
-
     raise Exception("No path found")
 
 
+# REMEMBER THE GOAL IS TO IMPLEMENT THE ALGORITHM TO RUN AS FAST AS POSSIBLE
 # The first heuristic in the huerisitcs parameter will be used as the admissible heuristic
-def a_star_integrated(grid, start, goal, heuristics=[], w1=1, w2=1):
-    pass
+def a_star_integrated(grid, start, goal,
+                      heuristics=[diagonal_distance_a, euclidian_distance],
+                      w1=1, w2=1):
+    g = dict()
+    bp = dict()
+    o = dict()
+    g[start] = 0
+    g[goal] = float('inf')
+    bp[start] = start
+    bp[goal] = None
+    for h in heuristics:
+        o[h] = Fringe()
+        o[h][start] = key(g, h, start, w1)
+    anchor = heuristics[0]
+    inad = heuristics[1:]
+    c_a = set()
+    c_i = set()
+    while o[anchor].top()[0] < float('inf'):
+        to_yeild = None
+        for i in inad:
+            (a_top_c, a_top_s) = o[anchor].top()
+            (i_top_c, i_top_s) = o[i].top()
+            if a_top_c <= w2*i_top_c:
+                if g[goal] <= i_top_c:
+                    if g[goal] < float('inf'):
+                        yield (o[i], g, i, bp, goal)
+                        return
+                else:
+                    (cst, curr) = o[i].pop()
+                    __expand_space_integrated(grid, o, c_a, c_i, g, anchor, i, bp, curr, w1)
+                    c_i.add(curr)
+                    yield (o[i], g, i, bp, curr)
+            else:
+                if g[goal] <= a_top_c:
+                    if g[goal] < float('inf'):
+                        yield (o[anchor], g, anchor, bp, goal)
+                        return
+                else:
+                    (cst, curr) = o[anchor].pop()
+                    __expand_space_integrated(grid, o, c_a, c_i, g, anchor, i, bp, curr, w1)
+                    c_a.add(curr)
+                    yield (o[anchor], g, anchor, bp, curr)
+    raise Exception("No path found")
+
+
+def __expand_space_integrated(grid, o, c_a, c_i, g, anchor, h, bp, curr, w1):
+    for k in o:
+        if curr in o[k]:
+            o[k].remove(curr)  # TODO make the fringe sorted so this is faster
+        # v[curr] ?
+        for n in neighbors(grid, curr):
+            if n not in g:
+                g[n] = float('inf')
+                bp[n] = None
+                # v[n]  ?
+            if g[n] > g[curr] + cost(grid, curr, n):
+                g[n] = g[curr] + cost(grid, curr, n)
+                bp[n] = curr
+                if n not in c_a:
+                    if n not in c_i:
+                        for k in o:
+                            o[k][n] = key(g, h, n, w1)
+                    else:
+                        o[anchor][n] = key(g, h, n, w1)
+
+
+def key(g, h, s, w1):
+    return g[s] + w1*h(s)
+
+
+# Options:
+# 1. Put new shared data structures in a parameters for best_first_search and a_star
+#   a. adds parameter value for each new data structure with default being None
+#   b. introspection to determine which expand function to use
+#
+# 2. Make best_first_search into a class  <- I think this is the winner, but I won't have time
+#   a. an instance of the class is iterable (it implements __iter__() and __next__())
+#   b. methods can be overwritten (like expand)
+#   c. state can be shared instead of requiring long parameter lists
+#   d. initialization of the data structures can be handled in an encapsulated function
+#       that can be overwritten
+#
+# 3. Write a separate function that does not use the a_star generaters

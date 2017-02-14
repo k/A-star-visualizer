@@ -41,27 +41,28 @@ while i < 10:
 
         print('Testing Uniform Cost Search')
         ucs = uniform_cost_search(grid, start, goal)
-        for (g, h, parent, curr) in ucs:
+        for (f, g, h, parent, curr) in ucs:
             pass
         print(g[goal])
 # output_image(grid, "ucs.png", start, goal, path(parent, curr))
 
         print('Testing A* Search')
         astar = a_star(grid, start, goal, manhattan_distance_a)
-        for (g, h, parent, curr) in astar:
+        for (f, g, h, parent, curr) in astar:
             pass
         print(g[goal])
 # output_image(grid, "a_star.png", start, goal, path(parent, curr))
 
         print('Testing A* Weighted Search')
         astar_w = a_star(grid, start, goal, diagonal_distance, w=2)
-        for (g, h, parent, curr) in astar_w:
+        for (f, g, h, parent, curr) in astar_w:
             pass
         print(g[goal])
 
 # output_image(grid, "a_star_w.png", start, goal, path(parent, curr))
         print('Writing to output file')
         maps.output_file(grid, start, goal, args.output_file + '_' + str(i) + '.txt')
-    except:
+    except Exception as e:
+        print e
         continue
     i = i+1
