@@ -1,10 +1,10 @@
 from fringe_heap import Fringe
 from grid import cost, neighbors
 from heuristic import (
-        manhattan_distance,
-        diagonal_distance,
+        manhattan_distance_n,
+        diagonal_distance_n,
         diagonal_distance_a,
-        euclidian_distance,
+        euclidian_distance_n,
         )
 
 # TODO Add Node class to take advantage of dynamic programming
@@ -34,7 +34,7 @@ def path_cost(grid, parent, curr):
 
 
 # Implementation of Best First Search that uses a priority queue (implemented as a binary heap)
-def best_first_search(grid, start, goal, cost, h=lambda n: 0):
+def best_first_search(grid, start, goal, cost, h=lambda s: 0):
     fringe = Fringe()
     visited = set()
     parent = dict()
@@ -42,7 +42,7 @@ def best_first_search(grid, start, goal, cost, h=lambda n: 0):
     g = dict()
     g[goal] = float('inf')
     g[start] = 0
-    curr = None
+    curr = start
 
     fringe[start] = 0
     while len(fringe) > 0:
@@ -72,7 +72,7 @@ def uniform_cost_search(grid, start, goal):
     return best_first_search(grid, start, goal, cost)
 
 
-def a_star(grid, start, goal, heuristic=diagonal_distance, w=1, w2=1, integrated=True):
+def a_star(grid, start, goal, heuristic=diagonal_distance_n, w=1, w2=1, integrated=True):
     if isinstance(heuristic, list):  # Do iterative A*
         if len(heuristic) > 1:
             if integrated:
@@ -82,13 +82,13 @@ def a_star(grid, start, goal, heuristic=diagonal_distance, w=1, w2=1, integrated
         else:
             return a_star(grid, start, goal, heuristic[0], w, w2)
     else:  # Only one heuristic, do regular A*
-        def h(n):
-            return w*heuristic(n, goal)
-        return best_first_search(grid, start, goal, cost, h)
+        def new_h(s):
+            return w*heuristic(grid, s, goal)
+        return best_first_search(grid, start, goal, cost, new_h)
 
 
 def a_star_sequential(grid, start, goal,
-                      heuristics=[diagonal_distance_a, euclidian_distance],
+                      heuristics=[diagonal_distance_a, euclidian_distance_n],
                       w1=1, w2=1):
     """Create an A* sequential generator
 
@@ -126,12 +126,12 @@ def a_star_sequential(grid, start, goal,
 # REMEMBER THE GOAL IS TO IMPLEMENT THE ALGORITHM TO RUN AS FAST AS POSSIBLE
 # The first heuristic in the huerisitcs parameter will be used as the admissible heuristic
 def a_star_integrated(grid, start, goal,
-                      heuristics=[diagonal_distance_a, euclidian_distance],
+                      heuristics=[diagonal_distance_a, euclidian_distance_n],
                       w1=1, w2=1):
     h_s = []
     for h1 in heuristics:  # Ran into a weird namespacing issue here when h1 was h
         def new_h(n):
-            return w1*h1(n, goal)
+            return w1*h1(grid, n, goal)
         h_s.append(new_h)
     heuristics = h_s
     g = dict()

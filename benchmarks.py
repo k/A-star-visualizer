@@ -10,11 +10,11 @@ from maps import input_file
 from search import path, path_cost, a_star, a_star_sequential, a_star_integrated, uniform_cost_search
 
 
-bases = [chebychev_distance, manhattan_distance, diagonal_distance, euclidian_distance]
+bases = [chebychev_distance_n, manhattan_distance_n, diagonal_distance_n, euclidian_distance_n]
 base_names = ['c', 'm', 'd', 'e']
 base_dict = dict(zip(bases, base_names))
-modifiers = [make_admissible, favor_highways]  # TODO: Fix and add favor_highways_smart
-modifier_names = dict(zip(modifiers, ['a', 'f']))
+modifiers = [make_admissible, favor_highways, favor_highways_smart]  # TODO: Fix and add favor_highways_smart
+modifier_names = dict(zip(modifiers, ['a', 'f', 's']))
 
 
 def heuristics():
@@ -22,6 +22,11 @@ def heuristics():
         yield (base_dict[b], b)
         for m in modifiers:
             yield (base_dict[b]+modifier_names[m], m(b))
+
+
+def heuristics_b():
+    for b in bases:
+        yield (base_dict[b], b)
 
 
 def heuristics_a():
@@ -35,9 +40,17 @@ def heuristics_f():
         yield (base_dict[b]+modifier_names[favor_highways], favor_highways(b))
 
 
-def heuristics_s():  # Favor_highways_smart needs fixing
+def heuristics_s():
     for b in bases:
         yield (base_dict[b]+modifier_names[favor_highways_smart], favor_highways_smart(b))
+
+
+def heuristic_all_inad(b):
+    name = base_dict[b]
+    yield (name, b)
+    for m in modifiers:
+        if m is not make_admissible:
+            yield (name+modifier_names[m], m(b))
 
 
 def algorithms():
@@ -54,33 +67,41 @@ def algorithms():
 
 # Weighted A*
     for name, h in heuristics():
-        for w in [1.25, 2, 3, 4]:
+        for w in [1.25, 2, 3, 4, 10]:
             yield a_star.__name__, name, w, None, partial(a_star, heuristic=h, w=w)
 
 # Sequential A*
-    for a_name, anchor in heuristics_a():
-        for i in [zip(base_names, bases), heuristics_f(), chain(zip(base_names, bases), heuristics_f())]:
+# TODO: Use some smaller sets heuristics (2 or 3) and mix them up
+    for b_name, base in heuristics_b():
+        anchor = make_admissible(base)
+        a_name = b_name+modifier_names[make_admissible]
+        for i in [heuristics_b(), heuristics_f(), heuristics_s(),
+                  heuristic_all_inad(base), chain(heuristics_b(), heuristics_s())]:
             others = []
             names = a_name
             for name, h in i:
                 others.append(h)
                 names = names + '-' + name
             hs = [anchor] + others
-            for w1 in [1.25, 2, 3, 4]:
-                for w2 in [1.25, 2, 3, 4]:
+            for w1 in [1, 1.25, 2, 3, 4, 10]:
+                for w2 in [1, 1.25, 2, 3, 4, 10]:
                     yield (a_star_sequential.__name__, names, w1, w2,
                            partial(a_star_sequential, heuristics=hs, w1=w1, w2=w2))
+
 # Integrated A*
-    for a_name, anchor in heuristics_a():
-        for i in [zip(base_names, bases), heuristics_f(), chain(zip(base_names, bases), heuristics_f())]:
+    for b_name, base in heuristics_b():
+        anchor = make_admissible(base)
+        a_name = b_name+modifier_names[make_admissible]
+        for i in [heuristics_b(), heuristics_f(), heuristics_s(),
+                  heuristic_all_inad(base), chain(heuristics_b(), heuristics_s())]:
             others = []
             names = a_name
             for name, h in i:
                 others.append(h)
                 names = names + '-' + name
             hs = [anchor] + others
-            for w1 in [1.25, 2, 3, 4]:
-                for w2 in [1.25, 2, 3, 4]:
+            for w1 in [1, 1.25, 2, 3, 4, 10]:
+                for w2 in [1, 1.25, 2, 3, 4, 10]:
                     yield (a_star_integrated.__name__, names, w1, w2,
                            partial(a_star_integrated, heuristics=hs, w1=w1, w2=w2))
 
@@ -92,7 +113,7 @@ def map_path(map_num, sg_pair):
 def run_algo(algo, grid, s_path):
     """Run an algorithm, return benchmarks"""
     expanded = 0
-    usage_b = resource.getrusage(resource.RUSAGE_SELF)  # TODO test that this makes sense
+    usage_b = resource.getrusage(resource.RUSAGE_SELF)
     for f, g, h, bp, s in algo():
         expanded = expanded+1
         pass

@@ -1,6 +1,22 @@
 # grid.py Grid functions
 import numpy as np
 from space import Space
+from functools import partial
+
+
+def memo(func):
+    memo = {}
+
+    def func_wrapper(*args, **kwargs):
+        list_args = list(args[1:])
+        if kwargs:
+            list_args.append(kwargs.values())
+        x = tuple(list_args)
+        if x not in memo:
+            memo[x] = func(*args, **kwargs)
+        return memo[x]
+
+    return func_wrapper
 
 
 # returns a grid with all blank spaces
@@ -28,6 +44,7 @@ def corners(g):
 
 
 # Returns the cost to travel from s1 to s2. Returns inf if either is blocked
+@memo
 def cost(g, s1, s2):
     if s2 in neighbors(g, s1):
         y = (s1.cost() + s2.cost())/2.
@@ -42,6 +59,7 @@ def cost(g, s1, s2):
 
 
 # Returns the neighboring cells of Space s in grid g
+@memo
 def neighbors(g, s):
     (x, y) = s.coords
     max_x = g.shape[0]
@@ -65,3 +83,13 @@ def unwrap_coords(func):
 @unwrap_coords
 def is_diagonal(s1x, s1y, s2x, s2y):
     return s1x != s2x and s1y != s2y
+
+
+@unwrap_coords
+def is_horizontal(s1x, s1y, s2x, s2y):
+    return s1y == s2y
+
+
+@unwrap_coords
+def is_vertical(s1x, s1y, s2x, s2y):
+    return s1x == s2x

@@ -315,7 +315,7 @@ def process_args():
                                 u: Uniform Cost Search\n \
                                 a: A star search\n \
                                 aw: A star weighted')
-    parser.add_argument('--heuristics', '-u', metavar='h(n)', nargs='+', type=str, 
+    parser.add_argument('--heuristics', '-u', metavar='h(n)', nargs='+', type=str,
                         choices=['m', 'ma', 'd', 'da', 'e'], default='d',
                         help='The heuristic to use\n\
                                 m: Manhattan Distance\n\
@@ -335,11 +335,11 @@ def process_args():
     args = parser.parse_args()
 
     algorithms = {'u': uniform_cost_search, 'a': a_star}
-    heuristics = {'m': manhattan_distance,
+    heuristics = {'m': manhattan_distance_n,
                   'ma': manhattan_distance_a,
-                  'd': diagonal_distance,
+                  'd': diagonal_distance_n,
                   'da': diagonal_distance_a,
-                  'e': euclidian_distance,
+                  'e': euclidian_distance_n,
                   }
     print(args)
     algo = algorithms[args.algorithm]
@@ -351,9 +351,9 @@ def process_args():
 
     if algo is a_star:
         if fhs:
-            h = favor_highways_smart(h)
+            h = [favor_highways_smart(x) for x in h]
         elif fh:
-            h = favor_highways(h)
+            h = [favor_highways(x) for x in h]
         algo = partial(algo, heuristic=h, w=w, integrated=integrated)
 
     speed = args.speed
