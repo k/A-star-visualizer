@@ -181,20 +181,20 @@ def __expand_space_integrated(grid, o, c_a, c_i, g, anchor, h, bp, curr, w1):
         if curr in o[k]:
             o[k].remove(curr)  # TODO make the fringe sorted so this is faster
         # v[curr] ?
-        for n in neighbors(grid, curr):
-            if n not in g:
-                g[n] = float('inf')
-                bp[n] = None
-                # v[n]  ?
-            if g[n] > g[curr] + cost(grid, curr, n):
-                g[n] = g[curr] + cost(grid, curr, n)
-                bp[n] = curr
-                if n not in c_a:
-                    if n not in c_i:
-                        for k in o:
-                            o[k][n] = key(g, h, n, w1)
-                    else:
-                        o[anchor][n] = key(g, h, n, w1)
+    for n in neighbors(grid, curr):
+        if n not in g:
+            g[n] = float('inf')
+            bp[n] = None
+            # v[n]  ?
+        if g[n] > g[curr] + cost(grid, curr, n):
+            g[n] = g[curr] + cost(grid, curr, n)
+            bp[n] = curr
+            if n not in c_a:
+                if n not in c_i:
+                    for k in o:
+                        o[k][n] = key(g, h, n, w1)
+                else:
+                    o[anchor][n] = key(g, h, n, w1)
 
 
 def key(g, h, s, w1):
