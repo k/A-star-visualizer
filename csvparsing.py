@@ -46,10 +46,10 @@ def aggregate_heuristics(writer, n, header):
             str_list = [h+m] + list(mean.astype('str'))
             writer.writerow(str_list)
 
-dname = 'csv-2-17/'
+dname = 'csv-2-19/'
 fname = 'benchmarks.csv'
 new_fnames = ['heuristics.csv', 'heuristics-astar.csv', 'algorithms.csv',
-              'anchors.csv', 'sorted-w1.csv', 'sorted-w2.csv']
+              'sorted-w1.csv', 'sorted-w2.csv', 'sorted-w1-w2.csv', 'anchors.csv']
 
 with open(dname + fname, 'r') as csvreadfile:
     m = np.genfromtxt(csvreadfile, dtype='str', delimiter=',')
@@ -71,7 +71,7 @@ with open(dname + fname, 'r') as csvreadfile:
 
     with open(dname + new_fnames[2], 'w') as csvwritefile:
         writer = csv.writer(csvwritefile, quoting=csv.QUOTE_MINIMAL)
-
+        writer.writerow([header[0]] + header[5:10])
         for a in algorithm_names:
             filtered = []  # Filter to find a_stars
             for r in m[1:]:
@@ -85,3 +85,47 @@ with open(dname + fname, 'r') as csvreadfile:
             str_list = [a] + list(mean.astype('str'))
             writer.writerow(str_list)
 
+# w1 sorted
+    with open(dname + new_fnames[3], 'w') as csvwritefile:
+        writer = csv.writer(csvwritefile, quoting=csv.QUOTE_MINIMAL)
+        writer.writerow([header[2]]+header[5:10])
+        for w in [1, 1.25, 2, 3, 4, 10]:
+            arr = []
+            for r in m[1:]:
+                if r[2] != '' and float(r[2]) == w:
+                    arr.append(r[5:10])
+            mean = np.mean(np.array(arr).astype('float'), 0)
+            str_list = [w] + list(mean.astype('str'))
+            writer.writerow(str_list)
+
+# w2 sorted
+    with open(dname + new_fnames[4], 'w') as csvwritefile:
+        writer = csv.writer(csvwritefile, quoting=csv.QUOTE_MINIMAL)
+        writer.writerow([header[3]]+header[5:10])
+        for w in [1, 1.25, 2, 3, 4, 10]:
+            arr = []
+            for r in m[1:]:
+                if r[3] != '' and float(r[3]) == w:
+                    arr.append(r[5:10])
+            mean = np.mean(np.array(arr).astype('float'), 0)
+            str_list = [w] + list(mean.astype('str'))
+            writer.writerow(str_list)
+
+# w1, w2 sorted
+    with open(dname + new_fnames[5], 'w') as csvwritefile:
+        writer = csv.writer(csvwritefile, quoting=csv.QUOTE_MINIMAL)
+        writer.writerow([header[2], header[3]]+header[5:10])
+        for w1 in [1, 1.25, 2, 3, 4, 10]:
+            filtered = []
+            for r in m[1:]:
+                if r[2] != ''and float(r[2]) == w1:
+                    filtered.append(r)
+
+            for w2 in [1, 1.25, 2, 3, 4, 10]:
+                arr = []
+                for r in filtered:
+                    if r[3] != ''and float(r[3]) == w2:
+                        arr.append(r[5:10])
+                mean = np.mean(np.array(arr).astype('float'), 0)
+                str_list = [w1, w2] + list(mean.astype('str'))
+                writer.writerow(str_list)
