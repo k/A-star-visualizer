@@ -1,4 +1,4 @@
-from fringe_heap import Fringe
+from fringe_binheap import Fringe
 from grid import cost, neighbors
 from heuristic import (
         manhattan_distance_n,
