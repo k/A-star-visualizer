@@ -71,12 +71,11 @@ def algorithms():
             yield a_star.__name__, name, w, None, partial(a_star, heuristic=h, w=w)
 
 # Sequential A*
-# TODO: Use some smaller sets heuristics (2 or 3) and mix them up
-    for b_name, base in heuristics_b():
+    for b_name, base in [(base_dict[diagonal_distance_n], diagonal_distance_n)]:
         anchor = make_admissible(base)
         a_name = b_name+modifier_names[make_admissible]
         for i in [heuristics_b(), heuristics_f(), heuristics_s(),
-                  heuristic_all_inad(base), chain(heuristics_b(), heuristics_s())]:
+                  heuristic_all_inad(base)]:
             others = []
             names = a_name
             for name, h in i:
@@ -89,11 +88,11 @@ def algorithms():
                            partial(a_star_sequential, heuristics=hs, w1=w1, w2=w2))
 
 # Integrated A*
-    for b_name, base in heuristics_b():
+    for b_name, base in [(base_dict[diagonal_distance_n], diagonal_distance_n)]:
         anchor = make_admissible(base)
         a_name = b_name+modifier_names[make_admissible]
         for i in [heuristics_b(), heuristics_f(), heuristics_s(),
-                  heuristic_all_inad(base), chain(heuristics_b(), heuristics_s())]:
+                  heuristic_all_inad(base)]:
             others = []
             names = a_name
             for name, h in i:
