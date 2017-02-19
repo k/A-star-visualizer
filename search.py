@@ -106,7 +106,7 @@ def a_star_sequential(grid, start, goal,
         for i in inad:
             (a_top_c, a_top_s) = f[anchor].top()
             (i_top_c, i_top_s) = f[i].top()
-            if a_top_c <= w2*i_top_c:
+            if i_top_c <= w2*a_top_c:
                 if g[i][goal] <= i_top_c:
                     if g[i][goal] < float('inf'):
                         yield (f[i], g[i], h[i], bp[i], goal)
@@ -153,7 +153,7 @@ def a_star_integrated(grid, start, goal,
         for i in inad:
             (a_top_c, a_top_s) = o[anchor].top()
             (i_top_c, i_top_s) = o[i].top()
-            if a_top_c <= w2*i_top_c:
+            if i_top_c <= w2*a_top_c:
                 if g[goal] <= i_top_c:
                     if g[goal] < float('inf'):
                         yield (o[i], g, i, bp, goal)
