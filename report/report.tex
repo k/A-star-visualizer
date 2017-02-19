@@ -69,15 +69,15 @@ Therefore when the algorithm exits in this way the solutions is $w_1*w_2$-subopt
 
 \subsection{Integrated A*}
 \subsubsection{Proof i}
-\paragraph{No state expanded more than twice other than the start node.}
+\paragraph{No state expanded more than twice.}
 \begin{enumerate}
-    \item All $OPEN_i$ begin with the start node inserted.
     \item When a state is expanded, it is inserted into one of the CLOSED data structures. (a) In the inadmissible branch, it is inserted into $CLOSED_{inad}$ (line 36). (b) In the admissible branch, it is inserted into $CLOSED_{anchor}$ (line 44).
     \item A state is never inserted into $OPEN_i, \forall i$ while it is in the $CLOSED_{anchor}$ data structure (line 12).
     \item A state is never inserted into $OPEN_i, \forall i \neq 0$ while it is in the $CLOSED_{inad}$ data structure (line 14).
     \item A state can only be expanded after being inserted into an $OPEN_i$ data structure (line 29, 34, 42).
-    \item By combining (1a), (2) and (4), a state will be expanded at most once in the inadmissible branch (line 35).
-    \item By combining (1b), (2) and (4), a state will be expanded at most once in the anchor branch (line 43).
+    \item When a state is expanded, the state is removed from $OPEN_i, \forall i$ (line 4).
+    \item By combining (1a), (2), (4), and (5), a state will be expanded at most once in the inadmissible branch (line 35).
+    \item By combining (1b), (2), (4), and (5), a state will be expanded at most once in the anchor branch (line 43).
 \end{enumerate}
  Since a non-start state will only be expanded at most once in each branch, therefore no state is expanded more than twice other than the start node.
 
@@ -99,7 +99,9 @@ State expanded in an inadmissible search can only be re-expanded in the anchor s
 
 \begin{enumerate}
     \item A state expanded in an inadmissible can add the the state to $OPEN_0$ (line 13).
-    \item it probably has to do with line 16
+    \item Whenever a key is added to an inadmissible $OPEN_i$, then it's key must be less then or equal to the corresponding admissible heuristic (line 16)
+    \item If a state $s_i$ was expanded in an inadmissible heuristic, then it was removed from $OPEN_0$ (line 4).
+    \item The $g$ value is retained, and then is only re-added if the check in line 10 is satisfied for $n \in \text{succ}(s_i)$, which for which it must be a lower g value.
 \end{enumerate}
 
 \section{Heuristics}
