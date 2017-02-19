@@ -1,0 +1,140 @@
+\documentclass[11pt,draft]{article}
+
+ 
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={Kenneth Bambridge --- Assignment 1},
+    bookmarks=true,
+    pdfpagemode=FullScreen,
+}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+% packages that allow mathematical formatting
+
+\usepackage{graphicx}
+% package that allows you to include graphics
+
+% \usepackage{setspace}
+% package that allows you to change spacing
+
+% \onehalfspacing
+% text become 1.5 spaced
+
+\usepackage{fullpage}
+% package that specifies normal margins
+
+\begin{document}
+
+\title{Intro to AI Assignment 1 --- Heuristic Search}
+\author{Kenneth Bambridge --- kmb394}
+\date{\today}
+\maketitle
+\tableofcontents
+
+\section{Introduction}
+% Describe the purpose of this project and hint at what was learned
+
+\section{Algorithms}
+% Describe the basic theory behind the algorithms and heuristics, answers questions related to them
+
+\subsection{Uniform Cost Search}
+
+\subsection{A*}
+
+\subsection{Weighted A*}
+
+\subsection{Sequential A*}
+
+\subsubsection{Proof that Sequential A* is $w_1$ subomptimal}
+Given that the $g$ value of any state $s$ expanded by the Weighted A* algorithm is at most $w_1$ suboptimal for an admissible and consistent heuristic, consider a state $s_i$ in the $OPEN_0$ queue that is on the least cost path to $s_{goal}$. 
+During the initialization loop starting at line 13, all of the $OPEN_i$ fringes are populated with the start node, which is trivially on the shortest path to $s_{goal}$.
+For the iterations starting at line 19, the only time the $OPEN_0$ data structure is inserted or updated is on line 11, where it is inserted with the value $g_0(s) + w_1*h_0(s)$ for all neighbors where their $g$ values are less then the existing keys in the fringe.
+\\\\
+Since during every \verb_ExpandState_ call, all neighbors are considered for the node that was originally on the shortest path (the start node), there must also be a node $s_{n}$ considered every time $OPEN_0$ is updated that is on the shortest path to $s_{goal}$. This node's $g$ value is also updated if it is less then the existing value. The key of this value is $g(s_n) + w_1*h(s_n)$. The heuristic is admissible, so $h(s_n) \leq c^*(s_n) \implies w1*h(s_n) \leq w1*c^*(s_n)$. Since $s_{n}$ is on the shortest path to goal, $g(s_n)$ represents the shortest path from $s_{start} \rightarrow s_n$, therefore $g(s_n) + w_1*h(s_n) \leq w_1*c*(s_n)$.
+Since this `minimum' node exists for the initialization and is maintained in every loop, it exists for the duration of the algorithm.
+\\\\
+The heuristic is admissible and consistent, therefore $s_n$ must also be the minimum key in $OPEN_0$ because 
+
+\subsubsection{Proof that Sequential A* is $w_1*w_2$ subomptimal}
+% Then, prove that when the Sequential Heuristic A* terminates in the ith search, that gi(sgoal) < w1*w2*c*(sgoal)    
+The program can exit in one of two ways, either with the anchor search or via an non-anchor heuristic.
+If all the non-anchor heuristics have minimum keys greater than the anchor, the anchor will be run and the goal returned if $g_0(s_{goal})$ is less then the minimum key in $OPEN_0$ and infinity. In this case the output is $w_1$-suboptimal as proven above. \\
+When the program exits with an non-anchor heuristic, it is run when the minimum key is less then $w_2*OPEN_0.\text{Minkey} < w_2*w_1*c^*(s_goal)$.
+Therefore when the algorithm exits in this way the solutions is $w_1*w_2$-suboptimal.
+
+\subsection{Integrated A*}
+\subsubsection{Proof i}
+\paragraph{No state expanded more than twice other than the start node.}
+\begin{enumerate}
+    \item All $OPEN_i$ begin with the start node inserted.
+    \item When a state is expanded, it is inserted into one of the CLOSED data structures. (a) In the inadmissible branch, it is inserted into $CLOSED_{inad}$ (line 36). (b) In the admissible branch, it is inserted into $CLOSED_{anchor}$ (line 44).
+    \item A state is never inserted into $OPEN_i, \forall i$ while it is in the $CLOSED_{anchor}$ data structure (line 12).
+    \item A state is never inserted into $OPEN_i, \forall i \neq 0$ while it is in the $CLOSED_{inad}$ data structure (line 14).
+    \item A state can only be expanded after being inserted into an $OPEN_i$ data structure (line 29, 34, 42).
+    \item By combining (1a), (2) and (4), a state will be expanded at most once in the inadmissible branch (line 35).
+    \item By combining (1b), (2) and (4), a state will be expanded at most once in the anchor branch (line 43).
+\end{enumerate}
+ Since a non-start state will only be expanded at most once in each branch, therefore no state is expanded more than twice other than the start node.
+
+\subsubsection{Proof ii}
+\paragraph{State expanded in the anchor search is never re-expanded.}
+
+\begin{enumerate}
+    \item When the anchor search expands a state, the state is added to $CLOSED_{anchor}$ (line 44).
+    \item Only the anchor search branch can expand nodes in $OPEN_0$ (line 42).
+    \item The anchor search branch only expands nodes in $OPEN_0$ (lines 42--44).
+    \item A state is never inserted into $OPEN_i, \forall i$ while it is in the $CLOSED_{anchor}$ data structure (line 12).
+    \item After a state is expanded in the anchor search, it is not in $OPEN_i, \forall i$ (line 4).
+    \item A state can only be expanded while in an $OPEN_i$ data structure (line 29, 34, 42).
+    \item Therefore, a state expanded in the anchor search is never re-expanded.
+\end{enumerate}
+
+\subsubsection{Proof iii}
+State expanded in an inadmissible search can only be re-expanded in the anchor search if its g-value is lowered
+
+\begin{enumerate}
+    \item A state expanded in an inadmissible can add the the state to $OPEN_0$ (line 13).
+    \item it probably has to do with line 16
+\end{enumerate}
+
+\section{Heuristics}
+
+\subsection{Chebychev Distance}
+
+\subsection{Manhattan Distance}
+
+\subsection{Diagonal Distance}
+
+\subsection{Euclidian Distance}
+
+
+\section{Implementation Notes}
+
+\subsection{Map Generation}
+% Discuss how the map was generated, what was the data structure, what tools were used
+
+\subsection{Algorithm Implementation}
+% Discuss the choices for implementing the algorithms the way we did
+% Talk about optimizations, memoization, heap/bisect
+
+\subsection{GUI Visualizer}
+% Discuss how the GUI visualizer is implemented, what tools were used, etc.
+
+\section{Benchmarks}
+
+\subsection{Overall Comparison}
+\subsection{Comparison of Heuristic Modifiers}
+\subsection{Uniform Cost Search}
+\subsection{A*}
+\subsection{Weighted A*}
+\subsection{Sequential A*}
+\subsection{Integrated A*}
+\subsection{Conclusion}
+
+
+\end{document}

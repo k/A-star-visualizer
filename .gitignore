@@ -6,3 +6,7 @@ maps
 __pycache__
 *csv
 *csv.old
+*.aux
+*.fls
+*.toc
+*.fdb_latexmk
