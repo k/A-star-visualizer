@@ -1,5 +1,6 @@
 from fringe_binheap import Fringe
 from grid import cost, neighbors
+from functools import partial
 from heuristic import (
         manhattan_distance_n,
         diagonal_distance_n,
@@ -102,7 +103,6 @@ def a_star_sequential(grid, start, goal,
         # Get first value for each heuristic so we can start the conditional loop
         f[a], g[a], h[a], bp[a], curr = next(a)
     while f[anchor].top()[0] < float('inf'):
-        to_yeild = None
         for i in inad:
             (a_top_c, a_top_s) = f[anchor].top()
             (i_top_c, i_top_s) = f[i].top()
@@ -123,16 +123,19 @@ def a_star_sequential(grid, start, goal,
     raise Exception("No path found")
 
 
-# REMEMBER THE GOAL IS TO IMPLEMENT THE ALGORITHM TO RUN AS FAST AS POSSIBLE
 # The first heuristic in the huerisitcs parameter will be used as the admissible heuristic
 def a_star_integrated(grid, start, goal,
                       heuristics=[diagonal_distance_a, euclidian_distance_n],
                       w1=1, w2=1):
     h_s = []
+
+    def prep_h(f):
+        def func_wrapper(n):
+            return f(grid, n, goal)
+        return func_wrapper
+
     for h1 in heuristics:  # Ran into a weird namespacing issue here when h1 was h
-        def new_h(n):
-            return w1*h1(grid, n, goal)
-        h_s.append(new_h)
+        h_s.append(prep_h(h1))
     heuristics = h_s
     g = dict()
     bp = dict()
@@ -141,18 +144,20 @@ def a_star_integrated(grid, start, goal,
     g[goal] = float('inf')
     bp[start] = start
     bp[goal] = None
-    for h in heuristics:
-        o[h] = Fringe()
-        o[h][start] = key(g, h, start, w1)
+    for h1 in heuristics:
+        o[h1] = Fringe()
+        o[h1][start] = key(g, h1, start, w1)
     anchor = heuristics[0]
     inad = heuristics[1:]
     c_a = set()
     c_i = set()
     while o[anchor].top()[0] < float('inf'):
-        to_yeild = None
         for i in inad:
             (a_top_c, a_top_s) = o[anchor].top()
-            (i_top_c, i_top_s) = o[i].top()
+            if len(o[i]) > 0:
+                (i_top_c, i_top_s) = o[i].top()
+            else:
+                i_top_c = float('inf')
             if i_top_c <= w2*a_top_c:
                 if g[goal] <= i_top_c:
                     if g[goal] < float('inf'):
@@ -160,7 +165,7 @@ def a_star_integrated(grid, start, goal,
                         return
                 else:
                     (cst, curr) = o[i].pop()
-                    __expand_space_integrated(grid, o, c_a, c_i, g, anchor, i, bp, curr, w1)
+                    __expand_space_integrated(grid, o, c_a, c_i, g, anchor, inad, bp, curr, w1, w2)
                     c_i.add(curr)
                     yield (o[i], g, i, bp, curr)
             else:
@@ -170,31 +175,30 @@ def a_star_integrated(grid, start, goal,
                         return
                 else:
                     (cst, curr) = o[anchor].pop()
-                    __expand_space_integrated(grid, o, c_a, c_i, g, anchor, i, bp, curr, w1)
+                    __expand_space_integrated(grid, o, c_a, c_i, g, anchor, inad, bp, curr, w1, w2)
                     c_a.add(curr)
                     yield (o[anchor], g, anchor, bp, curr)
     raise Exception("No path found")
 
 
-def __expand_space_integrated(grid, o, c_a, c_i, g, anchor, h, bp, curr, w1):
+def __expand_space_integrated(grid, o, c_a, c_i, g, anchor, inad, bp, curr, w1, w2):
     for k in o:
         if curr in o[k]:
-            o[k].remove(curr)  # TODO make the fringe sorted so this is faster
-        # v[curr] ?
+            o[k].remove(curr)
     for n in neighbors(grid, curr):
         if n not in g:
             g[n] = float('inf')
             bp[n] = None
-            # v[n]  ?
+        g_new = g[curr] + cost(grid, curr, n)
         if g[n] > g[curr] + cost(grid, curr, n):
-            g[n] = g[curr] + cost(grid, curr, n)
+            g[n] = g_new
             bp[n] = curr
             if n not in c_a:
+                o[anchor][n] = key(g, anchor, n, w1)
                 if n not in c_i:
-                    for k in o:
-                        o[k][n] = key(g, h, n, w1)
-                else:
-                    o[anchor][n] = key(g, h, n, w1)
+                    for i in inad:
+                        if key(g, i, n, w1) <= w2*o[anchor][n]:
+                            o[i][n] = key(g, i, n, w1)
 
 
 def key(g, h, s, w1):
