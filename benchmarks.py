@@ -31,7 +31,7 @@ def heuristics_b():
 
 def heuristics_a():
     for b in bases:
-        if b is not euclidian_distance:
+        if b is not euclidian_distance_n:
             yield (base_dict[b]+modifier_names[make_admissible], make_admissible(b))
 
 
@@ -140,8 +140,8 @@ def main():
     fname = "benchmarks.csv"  # CSV with the averages
     with open('csv/' + fname, 'w+') as csvwritefile:
         writer = csv.writer(csvwritefile, quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(['Algorithm', 'Heuristics', 'w1', 'w2', 'Average Run Time',
-                        'Average Path Length', 'Average Path Cost/Optimal', 'Average Nodes Expanded', 'Memory Used'])
+        writer.writerow(['Algorithm', 'Heuristics', 'w1', 'w2', 'Run Time',
+                        'Path Length', 'Cost/Optimal', 'Nodes Expanded', 'Memory Used'])
 
     s_paths = np.zeros([5, 10])
     a_star_admissible = partial(a_star, heuristic=manhattan_distance_a)
@@ -155,6 +155,7 @@ def main():
                         pass
                     s_paths[map_num-1, sg_pair] = s_path = path_cost(grid, bp, s)
                 algo = partial(a, grid, grid[start], grid[goal])
+
                 print("Forking to run {0}".format(name))
                 newpid = os.fork()  # Fork the process so we get a separate memory footprint
                 if newpid is 0:

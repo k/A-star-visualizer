@@ -10,3 +10,5 @@ __pycache__
 *.fls
 *.toc
 *.fdb_latexmk
+*.dvi
+*.out

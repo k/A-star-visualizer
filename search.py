@@ -136,6 +136,7 @@ def a_star_integrated(grid, start, goal,
 
     for h1 in heuristics:  # Ran into a weird namespacing issue here when h1 was h
         h_s.append(prep_h(h1))
+
     heuristics = h_s
     g = dict()
     bp = dict()
@@ -151,6 +152,8 @@ def a_star_integrated(grid, start, goal,
     inad = heuristics[1:]
     c_a = set()
     c_i = set()
+    expand_space = partial(__expand_space_integrated, grid, o, c_a, c_i, g,
+                           anchor, inad, bp, w1, w2)
     while o[anchor].top()[0] < float('inf'):
         for i in inad:
             (a_top_c, a_top_s) = o[anchor].top()
@@ -165,7 +168,7 @@ def a_star_integrated(grid, start, goal,
                         return
                 else:
                     (cst, curr) = o[i].pop()
-                    __expand_space_integrated(grid, o, c_a, c_i, g, anchor, inad, bp, curr, w1, w2)
+                    expand_space(curr)
                     c_i.add(curr)
                     yield (o[i], g, i, bp, curr)
             else:
@@ -175,13 +178,13 @@ def a_star_integrated(grid, start, goal,
                         return
                 else:
                     (cst, curr) = o[anchor].pop()
-                    __expand_space_integrated(grid, o, c_a, c_i, g, anchor, inad, bp, curr, w1, w2)
+                    expand_space(curr)
                     c_a.add(curr)
                     yield (o[anchor], g, anchor, bp, curr)
     raise Exception("No path found")
 
 
-def __expand_space_integrated(grid, o, c_a, c_i, g, anchor, inad, bp, curr, w1, w2):
+def __expand_space_integrated(grid, o, c_a, c_i, g, anchor, inad, bp, w1, w2, curr):
     for k in o:
         if curr in o[k]:
             o[k].remove(curr)

@@ -1,4 +1,4 @@
-\documentclass[11pt,draft]{article}
+\documentclass[11pt,letter]{article}
 
  
 \usepackage{hyperref}
@@ -28,6 +28,10 @@
 \usepackage{fullpage}
 % package that specifies normal margins
 
+\usepackage{csvsimple}
+
+\usepackage{siunitx}
+
 \begin{document}
 
 \title{Intro to AI Assignment 1 --- Heuristic Search}
@@ -38,36 +42,48 @@
 
 \section{Introduction}
 % Describe the purpose of this project and hint at what was learned
+In this project several best first search algorithms were explored, notably the A* family of algorithms. The algorithms were implemented and visualized in a GUI. Then another script was written to measure the running time of the algorithms. This data was aggregated and several heuristics and modifiers to the heuristics were compared across different metrics including runtime, memory used, and number of visited nodes.
 
 \section{Algorithms}
 % Describe the basic theory behind the algorithms and heuristics, answers questions related to them
+The algorithms explored in this project were best-first-search algorithms, i.e. the algorithms choose the next node to explore by choosing the next best node according to a computed evaluation function.
 
 \subsection{Uniform Cost Search}
+The simplest algorithm explored is uniform cost search, whose evaluation function is a cumulative sum of the costs to get to each node visited, defined as $f(n) = g(n)$. There are no heuristics used. We expect this algorithm to perform fairly poorly as it is $O(b^{d+1})$ time and space complexity where $b$ is the branching factor and $d$ is the depth of the goal.
 
 \subsection{A*}
+A* adds a heuristic to the evaluation function, $f(n) = g(n) + h(n)$. The heuristic represents some prior knowledge of the environment, therefore it is an \textit{informed} search algorithm.
+If the heuristic is \textit{admissible}, or it never overestimates the cost to the goal node from any node, then the solution will be optimal. If not, then there is a chance that the algorithm returns a suboptimal path. Furthermore, if the heuristic is \textit{consistent}, or it satisfies the triangular inequality $h(n) \leq c(n, n') + h(n')$. A* is optimally efficient in this case, meaning it will only select nodes that will bring it closer to the optimal path.
 
 \subsection{Weighted A*}
+Weighted A* adds a weight $w_1$ multiplier to the heuristic in the evaluation function, $f(n) = g(n) + w_1*h(n)$. This addition as we will see can drastically speed up the algorithm, at a $w_1$ cost to optimality.
 
 \subsection{Sequential A*}
 
-\subsubsection{Proof that Sequential A* is $w_1$ subomptimal}
-Given that the $g$ value of any state $s$ expanded by the Weighted A* algorithm is at most $w_1$ suboptimal for an admissible and consistent heuristic, consider a state $s_i$ in the $OPEN_0$ queue that is on the least cost path to $s_{goal}$. 
+Sequential A* allows the use of multiple heuristics with an anchor heuristic which, if admissible, will guarantee the return the optimal path. It runs through the non-anchor heuristics in a round-robin fashion, only expanding nodes from the non-anchor heuristics if the keys are less then the anchor.
+
+\subsubsection{Proof that Sequential A* is $w_1$ suboptimal}
+\par Given that the $g$ value of any state $s$ expanded by the Weighted A* algorithm is at most $w_1$ suboptimal for an admissible and consistent heuristic, consider a state $s_i$ in the $OPEN_0$ queue that is on the least cost path to $s_{goal}$. 
 During the initialization loop starting at line 13, all of the $OPEN_i$ fringes are populated with the start node, which is trivially on the shortest path to $s_{goal}$.
 For the iterations starting at line 19, the only time the $OPEN_0$ data structure is inserted or updated is on line 11, where it is inserted with the value $g_0(s) + w_1*h_0(s)$ for all neighbors where their $g$ values are less then the existing keys in the fringe.
-\\\\
-Since during every \verb_ExpandState_ call, all neighbors are considered for the node that was originally on the shortest path (the start node), there must also be a node $s_{n}$ considered every time $OPEN_0$ is updated that is on the shortest path to $s_{goal}$. This node's $g$ value is also updated if it is less then the existing value. The key of this value is $g(s_n) + w_1*h(s_n)$. The heuristic is admissible, so $h(s_n) \leq c^*(s_n) \implies w1*h(s_n) \leq w1*c^*(s_n)$. Since $s_{n}$ is on the shortest path to goal, $g(s_n)$ represents the shortest path from $s_{start} \rightarrow s_n$, therefore $g(s_n) + w_1*h(s_n) \leq w_1*c*(s_n)$.
+\\
+\par Since during every \verb_ExpandState_ call, all neighbors are considered for the node that was originally on the shortest path (the start node), there must also be a node $s_{n}$ considered every time $OPEN_0$ is updated that is on the shortest path to $s_{goal}$. This node's $g$ value is also updated if it is less then the existing value. The key of this value is $g(s_n) + w_1*h(s_n)$. The heuristic is admissible, so $h(s_n) \leq c^*(s_n) \implies w1*h(s_n) \leq w1*c^*(s_n)$. Since $s_{n}$ is on the shortest path to goal, $g(s_n)$ represents the shortest path from $s_{start} \rightarrow s_n$, therefore $g(s_n) + w_1*h(s_n) \leq w_1*c*(s_n)$.
 Since this `minimum' node exists for the initialization and is maintained in every loop, it exists for the duration of the algorithm.
-\\\\
-The heuristic is admissible and consistent, therefore $s_n$ must also be the minimum key in $OPEN_0$ because 
+\\
+\par The same is true for the Weighted A* algorithm above, there is always a node that is on the shortest path in the fringe for similar reasons. The start node is on the shortest path, and a shortest path node must be added every time. Since it is known that the node on the optimal path exists and it's key value must be less then $w_1 * c*(s)$, then the minimum key must also be less then that value in $OPEN_0$ in A* sequential.
 
 \subsubsection{Proof that Sequential A* is $w_1*w_2$ subomptimal}
 % Then, prove that when the Sequential Heuristic A* terminates in the ith search, that gi(sgoal) < w1*w2*c*(sgoal)    
 The program can exit in one of two ways, either with the anchor search or via an non-anchor heuristic.
 If all the non-anchor heuristics have minimum keys greater than the anchor, the anchor will be run and the goal returned if $g_0(s_{goal})$ is less then the minimum key in $OPEN_0$ and infinity. In this case the output is $w_1$-suboptimal as proven above. \\
-When the program exits with an non-anchor heuristic, it is run when the minimum key is less then $w_2*OPEN_0.\text{Minkey} < w_2*w_1*c^*(s_goal)$.
+
+When the program exits with a non-anchor heuristic, it is run when the minimum key is less then $w_2*OPEN_0.\text{Minkey} < w_2*w_1*c^*(s_{goal})$.
 Therefore when the algorithm exits in this way the solutions is $w_1*w_2$-suboptimal.
 
 \subsection{Integrated A*}
+
+Integrated A* shares $g$ and $parent$ values across all the heuristics, while still keeping it within the $w_1*w_2$ bound.
+
 \subsubsection{Proof i}
 \paragraph{No state expanded more than twice.}
 \begin{enumerate}
@@ -95,48 +111,128 @@ Therefore when the algorithm exits in this way the solutions is $w_1*w_2$-subopt
 \end{enumerate}
 
 \subsubsection{Proof iii}
-State expanded in an inadmissible search can only be re-expanded in the anchor search if its g-value is lowered
+\paragraph{A state expanded in an inadmissible search can only be re-expanded in the anchor search if its g-value is lowered.}
 
 \begin{enumerate}
     \item A state expanded in an inadmissible can add the the state to $OPEN_0$ (line 13).
     \item Whenever a key is added to an inadmissible $OPEN_i$, then it's key must be less then or equal to the corresponding admissible heuristic (line 16)
     \item If a state $s_i$ was expanded in an inadmissible heuristic, then it was removed from $OPEN_0$ (line 4).
-    \item The $g$ value is retained, and then is only re-added if the check in line 10 is satisfied for $n \in \text{succ}(s_i)$, which for which it must be a lower g value.
+    \item The $g$ value is retained in a data structure, but the node is only re-added to $OPEN_0$ if the check in line 10 is satisfied for $n \in \text{succ}(s_i)$, which for which it must be a lower g value.
 \end{enumerate}
 
-\section{Heuristics}
 
+\section{Heuristics}
 \subsection{Chebychev Distance}
+The Chebychev distance is the maximum distance of the minimum distance between to spaces in either the horizontal or vertical direction. This heuristic is not admissible because of highways. 
+\subsubsection{Admissible Version}
+It is admissible when divided by 4 because even in the case when there is only highway movement from the start to the goal, the heuristic will not overestimate the cost to get to the goal.
 
 \subsection{Manhattan Distance}
+The Manhattan distance is the distance required by only making horizontal or vertical movements.
+Manhattan distance represents a less direct path then the diagonal distance for 2d grids that allow 8 directional movement. I would expect this to underperform compared to the diagonal distance but nonetheless be good guidance. It is not admissible because if there is a valid highway movement on the shortest path the heuristic will return a greater value then the true cost. It is consistent in the equal cost case because it satisfies the triangular inequality.
+
+\subsubsection{Admissible Version}
+If Manhattan distance is divided by 4, then it is admissible for similar reasons to the Chebychev distance.
 
 \subsection{Diagonal Distance}
+The Diagonal distance is the minimum distance when diagonal movement is allowed. This heuristic is not admissible for similar reasons to the Manhattan and Chebychev distance.
+This heuristic in the absence of any terrain modifications the best heuristic for 8-directional movement defined in this environment because it calculates the exact distance in number of blocks needed to be traveled to get to and from two spaces on a 2d grid. It dominates any of the other heuristics while maintaining admissibility in the equal-cost case. It is consistent in the equal-cost case.
+\subsubsection{Admissible Version}
+ With the addition of spaces with sped up movement, the minimum cost to get to and from two nodes would be a path consisting of all of the fastest spaces in that grid. Therefore the potential minimum cost to travel between two nodes would be a path consisting of all of the minimum cost space, resulting in $h(n) = d(n)*s_m$ where $s_m$ denotes the minimum cost space. In our case the minimum cost is traveling between two highways vertically or horizontally which is 0.25, making our best admissible heuristic $h(n) = d(n)*0.25$. 
 
 \subsection{Euclidian Distance}
+Euclidean distance does worse than diagonal distance for 8 directional movement and it can be illustrated when we look at a 2d grid with equal movement costs.
+For any two start and goal pairs, the diagonal distance is at least as long as the euclidian distance, them being equal when the start and goal are equal distance away in the horizontal and vertical directions.
+That is, diagonal distance dominates euclidian distance in this situation. Both Euclidean and Diagonal distance share the same inadmissibility problem in this case so one would expect the diagonal to outperform the euclidean distance for this problem. 
+Euclidian distance would be consistent in an equal-cost case because Euclidian geometry satisfies the triangular inequality.
 
+\subsection{Favor Highways Modification} \label{favor highways}
+This is a modification that can be applied to all the previous heuristics. If any node is a highway, reduce it’s heuristic value by multiplying by the cost reduction of the highway, so the heuristics value becomes $h(n_{highway}) = h(n)*.25$.
+
+\subsection{Favor Highways Smart Modification}
+One shortcoming of the favor highways (\ref{favor highways}) modification is it will keep on the highway far beyond it needs to go in the direction of travel to the goal node. This heuristic tries to fix this shortcoming. 
+
+If the start node is a highway and there is a highway in one of the directions (vertically or horizontally) that needs to be traversed to get to the goal node, inflate the value of that heuristic by reducing it’s value scaled by the cost savings of traveling on a highway while it’s in a desired direction of travel.
+
+\begin{itemize}
+    \item Highway movement -- 0.25 per direction of movement (only one direction because it is horizontal or vertical)
+    \item Rough Highway movement -- 0.5 per direction of movement
+\end{itemize}
+
+This heuristic combined with diagonal distance is probably the optimal configuration given what is known about the map. This is because it bests diagonal distance if there is a highway on the way. To illustrate this consider the smallest case where instead of traveling diagonally for $\sqrt{2}$ movement, take the Manhattan distance along a (non-rough) highway in the direction of movement and then normal movement. The cost of this move is $1.25 < \sqrt{2} = 1.41$. If the highway is rough, however, then it will slightly underperform. Considering there are much fewer rough squares, and even in the situation was within a $31\times31$ square of 50\% chance of being rough, we can show that it is still worth it for greater than 1 moves because:
+\begin{equation}
+    .5*.25n + .5*.5*n + .5n + .5*2n = 1.875n < 1.41*.5n + 2.82*.5n = 2.115n.
+\end{equation}
 
 \section{Implementation Notes}
+A combination of functional programming and object-oriented programming was used to program this assignment. On the functional programming side, techniques like currying, first-class function types, and immutable types (like tuples) were used. For OOP, a inheritance was used for the fringe so I could swap different data structures in and out, a class was made called \verb_Space_ which represented one space in the grid, and the GUI framework used called \verb_Tkinter_ was used in an object-oriented fashion. Here are some notes on the optimizations and strategies used to implement various parts of the project.
 
 \subsection{Map Generation}
-% Discuss how the map was generated, what was the data structure, what tools were used
+The map was generated using functions from \verb_numpy_ and a class was written named \verb_Space_ to store terrain data for individual locations on the map. The functionality of 2d arrays in \verb_numpy_ including the ability to choose random elements from an a 2d array and functions to input and output to files was useful for map generation. See \verb_maps.py_, \verb_grid.py_, and \verb_gen-map.py_ for details.
 
 \subsection{Algorithm Implementation}
-% Discuss the choices for implementing the algorithms the way we did
-% Talk about optimizations, memoization, heap/bisect
+
+The algorithm functions were written as generators since it provided the functionality of an iterator which made step by step animation possible without tightly coupling the code with the GUI. See \verb_search.py_ and \verb_fringe-binheap.py_ for relevant code.
+
+\subsubsection{Organization}
+
+A general \verb_best-first-search_ was made that serves as the control flow for the algorithms \verb_uniform-cost-search_ and \verb_a-star_ searches. An optional parameter was added to \verb_a-star_ to support weighted A* which defaults to 1 if omitted.
+Since they were implemented as generators, \verb_a-star-sequential_ is essentially multiple \verb_a-star_ searches looped together. A separate control flow was needed to be implemented for \verb_a-star-integrated_ because of the shared data structures.
+
+\subsubsection{Heuristic Implementation}
+The heuristics were implemented as normal functions that were decorated with modifications like \verb_make-admissible_ and \verb_favor-highways_. See \verb_heuristics.py_.
+
+\subsubsection{Optimizations}
+\paragraph{Data structure changed from heap to binary heap}
+The fringe for the first phase of the project was implemented as a heap using the library \href{https://docs.python.org/2/library/heapq.html}{heapq}. This worked well because it has $O(1)$ pop and $O(\log{n})$ insert, but it had $O(n)$ removal which drastically slowed down Integrated A*. Then the fringe was switched to a binary tree using the library \href{https://pypi.python.org/pypi/pqdict/}{pqdict}. This sped up Integrated A* by about $50\%$.
+
+\paragraph{Memoization was used to temporarily store cost and neighbor values}
+Staying true to the functional programming paradigm, the \verb_neighbors_ function which calculates the neighbors of a Space was being called many times in Sequential and Integrated A* and was slowing down the algorithms. To speed this up a decorator called \verb_memo_ that wrapped the function and stored the values of neighbors in a dictionary so they can be quickly indexed next time they are needed. While this does increase the memory usage of the program it cut the cost of some of the longer running algorithms like \verb_uniform-cost-search_ and \verb_a-star-sequential_ by a significant amount.
 
 \subsection{GUI Visualizer}
-% Discuss how the GUI visualizer is implemented, what tools were used, etc.
+The GUI visualizer was implemented using \href{https://docs.python.org/2/library/tkinter.html}{Tkinter}, a python binding to Tk GUI toolkit. Drawing is done on the canvas after every step of the algorithm, and there is a command line interface to start the visualizer. Run \verb_python visualizer.py -h_ for details.
+
 
 \section{Benchmarks}
+Here we explore the data gathered from the benchmarks.
 
-\subsection{Overall Comparison}
-\subsection{Comparison of Heuristic Modifiers}
-\subsection{Uniform Cost Search}
-\subsection{A*}
-\subsection{Weighted A*}
-\subsection{Sequential A*}
-\subsection{Integrated A*}
-\subsection{Conclusion}
+\subsection{Algorithm Comparison} \label{algorithm comparison}
+\begin{center}
+    \csvautotabular{csv/algorithms.csv} 
+\end{center}
+\subsubsection{Uniform Cost Search, A*, and Weighted A*}
+\par Here as expected Uniform Cost Search grossly underperforms any o the weighted heuristic search algorithms. A* with no weight provides a 14\% improvement to runtime for an 11\% optimality decrease and a 10\% increase in memory on average across all heuristics, while weighted A* improves running time by over 50\% and using about 50\% less memory when considering the weights \verb_[1.25, 2, 3, 4, 10]_. The path cost to optimal ratio is sacrificed as expected.\\
+\par Uniform Cost Search  underperforms relative to heuristic methods because without any information to guide the search, UCS will search in many directions trying to find the shortest path to goal. A* improves this drastically with a good heuristic, but we run the risk of sacrificing optimality. When adding a weight to the heuristic, meaning we will trust the heuristic, we can speed up the algorithm considerably, while continuing to incur suboptimality based on the weight.
+\\
+\par Benchmarks data for UCS and A* can be viewed at the link \href{https://docs.google.com/spreadsheets/d/1ZdutLyAf5Jvw3L9p1cG2fGdi5LS3Mg2Jx-hI8yP902E/edit#gid=1408696378}{a-star-data}
 
+\subsubsection{Sequential A*}
+Sequential A* has too many repeats to be a very useful algorithm. It sounds useful to be able to use many heuristics, but when nodes are expanded up to $n+1$ times there is too much wasted time and memory, as can be seen in table in \ref{algorithm comparison}. It is most likely more useful to use regular A* with a weight unless there are a many unknowns in the environment and many heuristics are needed to navigate. This algorithm may also benefit from multiprocessing if many heuristics are used.\\
+\par
+Benchmarks on Sequential A* were done with the diagonal admissible heuristic and can be viewed at the link \href{https://docs.google.com/spreadsheets/d/1ZdutLyAf5Jvw3L9p1cG2fGdi5LS3Mg2Jx-hI8yP902E/edit#gid=971154194}{a-star-sequential-data}
+
+\subsubsection{Integrated A*}
+Integrated A* fixes the shortcoming of Sequential A* and uses significantly less time and memory by ensuring that each node is only expanded at most twice. It performed with similar runtime of A* weighted but with significantly less nodes expanded. \\
+\par
+Benchmarks on Integrated A* were done with the diagonal admissible heuristic and can be viewed at the link \href{https://docs.google.com/spreadsheets/d/1ZdutLyAf5Jvw3L9p1cG2fGdi5LS3Mg2Jx-hI8yP902E/edit#gid=1796117023}{a-star-integrated-data}
+
+\subsection{Comparison of Heuristics}
+\csvautotabular{csv/heuristics.csv}
+\par
+This table is not too informative because the data is diluted with many repeats of the heuristics in A* Sequential and Integrated. Another comparison is made below with only heuristics from vanilla A* and A* weighted. However, it shows the stark contrast between admissible and inadmissible heuristics for this problem. Run time is roughly doubled for every admissible heuristic (`a' denotes admissible) except for the diagonal admissible heuristic because it was used as the anchor for Sequential and Integrated A*.
+\subsection{Comparison of Heuristics in only A*}
+\csvautotabular{csv/heuristics-astar.csv}
+\par
+This table again shows the how much the admissibility trait has on the running time of this algorithm. This also shows a surprising discovery, contradictory to what was thought before the experiment. It was predicted that diagonal distance would be the best admissible/consistent heuristic, but it is in fact the Manhattan distance with lower runtime, node expansions, and memory used. This most likely has to do with the nature of the environment, and how the highways create a large incentive to move horizontally and vertically, therefore Manhattan distance provides the most accurate pathfinding tool.\par
+Another note is that the `smart' version of the favor highways heuristic did not outperform the `dumb' version from a resource use perspective. While the `smart' version did expand less nodes, the added computation time to figure out if there was a highway surrounding the current node took up enough computation time to offset it.
+\subsection{Sorted $w_1$ aggregate comparison}
+\csvautotabular{csv/sorted-w1.csv}
+\par This table shows how when weight increases, runtime decreases and path cost increases. The largest gain per weight was observed for the initial jump from $1 \rightarrow 1.25$. There were still significant decreases in running time, path length, node expansion, and memory usage for the max weight of 10.
+
+\subsection{Sorted $w_2$ aggregate comparison}
+\csvautotabular{csv/sorted-w2.csv}
+\par The second weight parameter did not seem to have as much of an effect, but that would depend on the inadmissible heuristics used. Still a similar expected trend.
+\subsection{Sorted $w_1, w_2$ aggregate comparison}
+\csvautotabular{csv/sorted-w1-w2.csv}
 
 \end{document}

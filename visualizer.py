@@ -34,13 +34,15 @@ class TileVM(Space):
          Type.highway_regular: "#666699",
          Type.highway_rough: "#996600"}
 
-    def __init__(self, space, canvas_id=None, in_fringe=False, in_path=False, is_start=False, is_goal=False):
+    def __init__(self, space, canvas_id=None, in_fringe=False, in_path=False,
+                 is_start=False, is_goal=False, visited=False):
         super(TileVM, self).__init__(space.coords, space.type)
         self.canvas_id = canvas_id
         self.is_start = is_start
         self.is_goal = is_goal
         self.in_fringe = in_fringe
         self.in_path = in_path
+        self.visited = visited
 
 
 # The Grid where the Tiles will be placed
@@ -121,9 +123,11 @@ class Grid(Frame):
         if tileVM.is_goal:
             color = "red"
         elif tileVM.is_start:
-            color = "blue"
+            color = "orange"
         elif tileVM.in_path:
             color = "#ffcc00"
+        elif tileVM.visited:
+            color = "blue"
         else:
             color = TileVM.colors[tileVM.type]
         if tileVM.canvas_id:
@@ -255,13 +259,17 @@ class SearchVisualizerApp(Frame):
     def step(self):
         try:
             (f, g, h, parent, curr) = self.search.next()
+            curr.visited = True
             if self.jump is True:
                 try:
                     while 1:
                         (f, g, h, parent, curr) = self.search.next()
+                        curr.visited = True
                         self.step_num = self.step_num+1
                 except StopIteration:
                     self.run = False
+                for s in g:
+                    self.grid_view.drawTile(s)
 
             self.g = g
             self.h = h

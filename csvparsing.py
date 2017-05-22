@@ -13,7 +13,7 @@ import numpy as np
 
 base_names = ['c', 'm', 'd', 'e']
 modifier_names = ['a', 'f', 's']
-algorithm_names = ['uniform_cost_search', 'a_star', 'a_star_sequential', 'a_star_integrated']
+algorithm_names = ['uniform_cost_search', 'a_star', 'a_star_w', 'a_star_sequential', 'a_star_integrated']
 
 
 def aggregate_heuristics(writer, n, header):
@@ -75,7 +75,13 @@ with open(dname + fname, 'r') as csvreadfile:
         for a in algorithm_names:
             filtered = []  # Filter to find a_stars
             for r in m[1:]:
-                if r[0] == a:
+                if a == 'a_star_w':
+                    if r[0] == 'a_star' and r[2].astype('float') > 1:
+                        filtered.append(r)
+                elif a == 'a_star':
+                    if r[0] == 'a_star' and r[2].astype('float') == 1:
+                        filtered.append(r)
+                elif r[0] == a:
                     filtered.append(r)
             arr = []
             for r in filtered:
