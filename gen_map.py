@@ -8,9 +8,13 @@ import argparse
 parser = argparse.ArgumentParser(description='Creates a randomly generated map text file')
 parser.add_argument('output_file', metavar='map', type=str, default='map.txt',
                     help='The filename to be used as the output file')
+parser.add_argument('--width', '-x' , metavar='#', type=int, default=160,
+                    help='The width of the map')
+parser.add_argument('--height', '-y' , metavar='#', type=int, default=120,
+                    help='The height of the map')
 args = parser.parse_args()
 
-grid = blank_grid()
+grid = blank_grid(args.width, args.height)
 
 print('Testing rough')
 grid = maps.gen_rough(grid)
@@ -54,7 +58,7 @@ while i < 10:
 # output_image(grid, "a_star.png", start, goal, path(parent, curr))
 
         print('Testing A* Weighted Search')
-        astar_w = a_star(grid, start, goal, diagonal_distance, w=2)
+        astar_w = a_star(grid, start, goal, diagonal_distance_n, w=2)
         for (f, g, h, parent, curr) in astar_w:
             pass
         print(g[goal])
@@ -62,6 +66,8 @@ while i < 10:
 # output_image(grid, "a_star_w.png", start, goal, path(parent, curr))
         print('Writing to output file')
         maps.output_file(grid, start, goal, args.output_file + '_' + str(i) + '.txt')
+    except TypeError as e:
+        raise
     except Exception as e:
         print e
         continue
